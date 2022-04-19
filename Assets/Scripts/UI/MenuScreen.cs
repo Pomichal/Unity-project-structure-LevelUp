@@ -7,6 +7,7 @@ public class MenuScreen : ScreenBase
 
     public void StartLevel(string levelName)
     {
-        // TODO: load level
+        App.gameManager.LoadLevel(levelName);
+        Hide();
     }
 }

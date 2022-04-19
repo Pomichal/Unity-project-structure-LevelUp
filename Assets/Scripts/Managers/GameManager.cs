@@ -9,15 +9,28 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         App.gameManager = this;
-        StartCoroutine(LoadSceneAsync("UIScene", new ShowScreenCommand<MenuScreen>()));
+        StartCoroutine(LoadSceneAsync("UIScene",
+                    new List<ICommand>{new ShowScreenCommand<MenuScreen>()}));
     }
 
-    // load level X
+    public void LoadLevel(string name)
+    {
+        StartCoroutine(LoadSceneAsync(name,
+                    new List<ICommand>
+                    {
+                        new SetLevelCommand(name),
+                        new ShowScreenCommand<InGameScreen>(),
+                    }));
+    }
 
-    // unload level X
+    public void UnloadLevel(string name)
+    {
+        StartCoroutine(UnloadSceneAsync(name,
+                    new List<ICommand>{new ShowScreenCommand<MenuScreen>()}));
 
+    }
 
-    IEnumerator LoadSceneAsync(string sceneName, ICommand afterSceneLoadedCommand = null)
+    IEnumerator LoadSceneAsync(string sceneName, List<ICommand> afterSceneLoadedCommands = null)
     {
         AsyncOperation loading = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         loading.allowSceneActivation = false;
@@ -32,9 +45,32 @@ public class GameManager : MonoBehaviour
         // loading done
         Debug.Log($"scene {sceneName} loaded");
 
-        if(afterSceneLoadedCommand != null)
+        if(afterSceneLoadedCommands != null)
         {
-            afterSceneLoadedCommand.Execute();
+            foreach(ICommand command in afterSceneLoadedCommands)
+            {
+                command.Execute();
+            }
+        }
+    }
+
+    IEnumerator UnloadSceneAsync(string sceneName, List<ICommand> afterSceneUnloadedCommands = null)
+    {
+        AsyncOperation loading = SceneManager.UnloadSceneAsync(sceneName);
+        while(!loading.isDone)
+        {
+            yield return null;
+        }
+        //
+        // loading done
+        Debug.Log($"scene {sceneName} unloaded");
+
+        if(afterSceneUnloadedCommands != null)
+        {
+            foreach(ICommand command in afterSceneUnloadedCommands)
+            {
+                command.Execute();
+            }
         }
     }
 }
