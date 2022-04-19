@@ -9,8 +9,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         App.gameManager = this;
-        StartCoroutine(LoadSceneAsync("UIScene"));
-        // load UI scene
+        StartCoroutine(LoadSceneAsync("UIScene", new ShowScreenCommand<MenuScreen>()));
     }
 
     // load level X
@@ -18,7 +17,7 @@ public class GameManager : MonoBehaviour
     // unload level X
 
 
-    IEnumerator LoadSceneAsync(string sceneName)
+    IEnumerator LoadSceneAsync(string sceneName, ICommand afterSceneLoadedCommand = null)
     {
         AsyncOperation loading = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         loading.allowSceneActivation = false;
@@ -32,5 +31,10 @@ public class GameManager : MonoBehaviour
         }
         // loading done
         Debug.Log($"scene {sceneName} loaded");
+
+        if(afterSceneLoadedCommand != null)
+        {
+            afterSceneLoadedCommand.Execute();
+        }
     }
 }
